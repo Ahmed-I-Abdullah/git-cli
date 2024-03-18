@@ -1,16 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
-	"strings"
+	"time"
 
+	"github.com/Ahmed-I-Abdullah/p2p-code-collaboration/internal/api/pb"
 	cli "github.com/urfave/cli/v2"
 	"google.golang.org/grpc"
-	// Assuming you have a GRPC package for client initialization
-	// "mygrpcpackage"
 )
 
 func main() {
@@ -34,11 +34,12 @@ func main() {
 				Action:  executeGitCommand,
 			},
 			{
-				Name:    "grpc",
-				Aliases: []string{"rpc"},
-				Usage:   "Execute commands via GRPC",
-				Action:  executeViaGRPC,
+				Name:   "init",
+				Usage:  "Initialize a new Git repository via GRPC",
+				Action: initViaGRPC,
 			},
+			// Placeholder for clone, push, and pull commands
+			// Add similar structs for each operation as needed
 		},
 	}
 
@@ -46,6 +47,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	mainCleanup()
 }
 
 // Global GRPC client connection
@@ -57,7 +60,6 @@ func setupGRPCClient(c *cli.Context) error {
 		return nil // No GRPC setup required if no peer URL provided
 	}
 
-	// Setup GRPC client connection
 	var err error
 	grpcClientConn, err = grpc.Dial(peerURL, grpc.WithInsecure()) // Consider secure options for production
 	if err != nil {
@@ -73,7 +75,6 @@ func executeGitCommand(c *cli.Context) error {
 		return fmt.Errorf("no Git command provided")
 	}
 
-	// Execute Git command
 	cmd := exec.Command("git", args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -84,24 +85,32 @@ func executeGitCommand(c *cli.Context) error {
 	return nil
 }
 
-func executeViaGRPC(c *cli.Context) error {
-	args := c.Args().Slice()
-	if len(args) < 1 {
-		return fmt.Errorf("no command provided for GRPC execution")
+func initViaGRPC(c *cli.Context) error {
+	repoName := c.Args().First()
+	if repoName == "" {
+		return fmt.Errorf("you must provide a repository name for initialization")
 	}
 
 	if grpcClientConn == nil {
 		return fmt.Errorf("GRPC client is not setup. Please provide a peer URL.")
 	}
 
-	// Assuming "MyGRPCClient" is initialized using "grpcClientConn" somewhere after connection setup
-	// myGRPCClient := mygrpcpackage.NewMyGRPCClient(grpcClientConn)
-	// Perform your GRPC request...
+	grpcClient := pb.NewRepositoryClient(grpcClientConn)
 
-	fmt.Println("GRPC command simulated:", strings.Join(args, " "))
-	// Simulate GRPC operation
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	response, err := grpcClient.Init(ctx, &pb.RepoInitRequest{Name: repoName, FromCli: true})
+	if err != nil {
+		return fmt.Errorf("failed to initialize repository via GRPC: %v", err)
+	}
+
+	fmt.Printf("Repository initialized successfully. Server Response: %s\n", response.Message)
 	return nil
 }
+
+// Placeholders for clone, push, and pull gRPC actions
+// Implement these functions similar to initViaGRPC
 
 func mainCleanup() {
 	if grpcClientConn != nil {
