@@ -38,7 +38,19 @@ func main() {
 				Usage:  "Initialize a new Git repository via GRPC",
 				Action: initViaGRPC,
 			},
-			// Placeholder for clone, push, and pull commands
+			{
+				Name:   "pull",
+				Usage:  "Pull changes from a Git repository via GRPC",
+				Action: pullViaGRPC,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "repo-name",
+						Usage:    "Name of the repository to pull changes from",
+						Required: true,
+					},
+				},
+			},
+			// Placeholder for clone and push commands
 			// Add similar structs for each operation as needed
 		},
 	}
@@ -106,6 +118,30 @@ func initViaGRPC(c *cli.Context) error {
 	}
 
 	fmt.Printf("Repository initialized successfully. Server Response: %s\n", response.Message)
+	return nil
+}
+
+func pullViaGRPC(c *cli.Context) error {
+	repoName := c.String("repo-name")
+	if repoName == "" {
+		return fmt.Errorf("you must provide a repository name for pulling changes")
+	}
+
+	if grpcClientConn == nil {
+		return fmt.Errorf("GRPC client is not setup. Please provide a peer URL.")
+	}
+
+	grpcClient := pb.NewRepositoryClient(grpcClientConn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	response, err := grpcClient.Pull(ctx, &pb.RepoPullRequest{Name: repoName})
+	if err != nil {
+		return fmt.Errorf("failed to pull repository via GRPC: %v", err)
+	}
+
+	fmt.Printf("Repository pull successful. Server Response: %s\n", response.RepoAddress)
 	return nil
 }
 
