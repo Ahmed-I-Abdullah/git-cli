@@ -24,8 +24,8 @@ For Linux and macOS:
 ```bash
 git clone https://github.com/yourusername/git-cli.git
 cd git-cli
-go build -o git-cli
-sudo mv git-cli /usr/local/bin
+go build -o git-peer ./cmd/cli/main.go
+sudo mv git-peer /usr/local/bin
 ```
 
 For Windows:
@@ -33,7 +33,7 @@ For Windows:
 ```bash
 git clone https://github.com/yourusername/git-cli.git
 cd git-cli
-go build -o git-cli.exe
+go build -o git-peer.exe ./cmd/cli/main.go
 ```
 
 ### Move the Binary to a Directory in Your PATH
