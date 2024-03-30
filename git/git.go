@@ -6,11 +6,30 @@ import (
 	"os/exec"
 )
 
-type CloneOptions struct {
-	URL     string
-	Dir     string
-	Branch  string
+type Options struct {
 	Verbose bool
+}
+
+type CloneOptions struct {
+	URL    string
+	Dir    string
+	Branch string
+	Options
+}
+
+type PullOptions struct {
+	URL    string
+	Branch string
+	Options
+}
+
+type PushOptions struct {
+	Remote      string
+	Branch      string
+	PushAll     bool
+	IncludeTags bool
+	ForcePush   bool
+	Options
 }
 
 func Clone(opts CloneOptions) error {
@@ -36,12 +55,6 @@ func Clone(opts CloneOptions) error {
 	return cmd.Run()
 }
 
-type PullOptions struct {
-	URL     string
-	Branch  string
-	Verbose bool
-}
-
 func Pull(opts PullOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("remote repository URL is required for pulling")
@@ -60,6 +73,35 @@ func Pull(opts PullOptions) error {
 	cmd := exec.Command("git", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
+func Push(opts PushOptions) error {
+	if opts.Remote == "" {
+		return fmt.Errorf("remote repository name is required for pushing")
+	}
+
+	args := []string{"push"}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+	if opts.PushAll {
+		args = append(args, "--all")
+	}
+	if opts.IncludeTags {
+		args = append(args, "--tags")
+	}
+	if opts.ForcePush {
+		args = append(args, "--force")
+	}
+	args = append(args, opts.Remote)
+
+	cmd := exec.Command("git", args...)
+	if opts.Verbose {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
 
 	return cmd.Run()
 }
