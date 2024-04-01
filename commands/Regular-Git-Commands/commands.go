@@ -149,4 +149,8 @@ var Commands = []*cli.Command{
 			},
 		},
 	},
+
+	// Commands to add:
+	// add, commit, status, branch, checkout, diff, fetch, log, merge, rebase, remote, reset, stash, tag, config
+
 }
