@@ -74,6 +74,11 @@ var Commands = []*cli.Command{
 		},
 	},
 	{
+		Name:   "log",
+		Usage:  "Show commit logs",
+		Action: logViaGRPC,
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,

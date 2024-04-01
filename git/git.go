@@ -68,6 +68,10 @@ type FetchOptions struct {
 	Options
 }
 
+type LogOptions struct {
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -253,6 +257,19 @@ func Fetch(opts FetchOptions) error {
 	if opts.Remote != "" {
 		args = append(args, opts.Remote)
 	}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
+func Log(opts LogOptions) error {
+	args := []string{"log"}
 	if opts.Verbose {
 		args = append(args, "--verbose")
 	}
