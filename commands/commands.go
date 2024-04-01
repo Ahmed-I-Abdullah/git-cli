@@ -105,6 +105,11 @@ var Commands = []*cli.Command{
 		},
 	},
 	{
+		Name:   "remote",
+		Usage:  "Manage set of tracked repositories",
+		Action: remoteViaGRPC,
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,

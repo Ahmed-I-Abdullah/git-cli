@@ -1,6 +1,7 @@
 package git
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -79,6 +80,10 @@ type MergeOptions struct {
 
 type RebaseOptions struct {
 	Branch string
+	Options
+}
+
+type RemoteOptions struct {
 	Options
 }
 
@@ -323,4 +328,22 @@ func Rebase(opts RebaseOptions) error {
 	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
+}
+
+func Remote(opts RemoteOptions) (string, error) {
+	args := []string{"remote", "-v"}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		return "", err
+	}
+
+	return out.String(), nil
 }
