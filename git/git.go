@@ -54,6 +54,11 @@ type BranchOptions struct {
 	Options
 }
 
+type CheckoutOptions struct {
+	Branch string
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -202,4 +207,21 @@ func Branch(opts BranchOptions) (string, error) {
 	}
 	branchOutput := "Branch operation executed successfully."
 	return branchOutput, nil
+}
+
+func Checkout(opts CheckoutOptions) error {
+	if opts.Branch == "" {
+		return fmt.Errorf("branch name is required for checkout")
+	}
+
+	args := []string{"checkout", opts.Branch}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
 }

@@ -44,6 +44,19 @@ var Commands = []*cli.Command{
 		Action: branchViaGRPC,
 	},
 	{
+		Name:   "checkout",
+		Usage:  "Switch branches or restore working tree files",
+		Action: checkoutViaGRPC,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "branch",
+				Aliases:  []string{"b"},
+				Usage:    "Branch name to checkout",
+				Required: true,
+			},
+		},
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,
