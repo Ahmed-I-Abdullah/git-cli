@@ -122,6 +122,11 @@ var Commands = []*cli.Command{
 		},
 	},
 	{
+		Name:   "stash",
+		Usage:  "Stash the changes in a dirty working directory",
+		Action: stashViaGRPC,
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,

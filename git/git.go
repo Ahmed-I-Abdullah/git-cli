@@ -92,6 +92,10 @@ type ResetOptions struct {
 	Options
 }
 
+type StashOptions struct {
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -358,6 +362,19 @@ func Reset(opts ResetOptions) error {
 	if opts.Commit != "" {
 		args = append(args, opts.Commit)
 	}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
+func Stash(opts StashOptions) error {
+	args := []string{"stash"}
 	if opts.Verbose {
 		args = append(args, "--verbose")
 	}
