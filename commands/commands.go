@@ -29,6 +29,11 @@ var Commands = []*cli.Command{
 		Action: addViaGRPC,
 	},
 	{
+		Name:   "commit",
+		Usage:  "Record changes to the repository",
+		Action: commitViaGRPC,
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,

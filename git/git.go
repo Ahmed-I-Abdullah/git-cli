@@ -37,6 +37,11 @@ type AddOptions struct {
 	Options
 }
 
+type CommitOptions struct {
+	Message string
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -124,6 +129,23 @@ func Add(opts AddOptions) error {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
+
+	return cmd.Run()
+}
+
+func Commit(opts CommitOptions) error {
+	if opts.Message == "" {
+		return fmt.Errorf("commit message is required")
+	}
+
+	args := []string{"commit", "-m", opts.Message}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
 }
