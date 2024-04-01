@@ -87,6 +87,11 @@ type RemoteOptions struct {
 	Options
 }
 
+type ResetOptions struct {
+	Commit string
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -346,4 +351,20 @@ func Remote(opts RemoteOptions) (string, error) {
 	}
 
 	return out.String(), nil
+}
+
+func Reset(opts ResetOptions) error {
+	args := []string{"reset"}
+	if opts.Commit != "" {
+		args = append(args, opts.Commit)
+	}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
 }

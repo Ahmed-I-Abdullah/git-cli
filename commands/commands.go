@@ -110,6 +110,18 @@ var Commands = []*cli.Command{
 		Action: remoteViaGRPC,
 	},
 	{
+		Name:   "reset",
+		Usage:  "Reset current HEAD to the specified state",
+		Action: resetViaGRPC,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "commit",
+				Usage:    "Commit hash to reset to",
+				Required: false, // Make required false if you want to allow reset without specifying a commit, which would default to HEAD
+			},
+		},
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,
