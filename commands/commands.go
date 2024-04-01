@@ -34,6 +34,11 @@ var Commands = []*cli.Command{
 		Action: commitViaGRPC,
 	},
 	{
+		Name:   "status",
+		Usage:  "Show the working tree status",
+		Action: statusViaGRPC,
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,

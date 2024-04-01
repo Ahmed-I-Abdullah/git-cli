@@ -42,6 +42,10 @@ type CommitOptions struct {
 	Options
 }
 
+type StatusOptions struct {
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -148,4 +152,22 @@ func Commit(opts CommitOptions) error {
 	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
+}
+func Status(opts StatusOptions) (string, error) {
+	args := []string{"status"}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("failed to get status: %v", err)
+	}
+
+	statusOutput := "Current status of the repo."
+
+	return statusOutput, nil
 }
