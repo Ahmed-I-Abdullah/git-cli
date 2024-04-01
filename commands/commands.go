@@ -39,6 +39,11 @@ var Commands = []*cli.Command{
 		Action: statusViaGRPC,
 	},
 	{
+		Name:   "branch",
+		Usage:  "List, create, or delete branches",
+		Action: branchViaGRPC,
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,

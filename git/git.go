@@ -46,6 +46,14 @@ type StatusOptions struct {
 	Options
 }
 
+type BranchOptions struct {
+	List   bool
+	Create bool
+	Delete bool
+	Name   string
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -170,4 +178,28 @@ func Status(opts StatusOptions) (string, error) {
 	statusOutput := "Current status of the repo."
 
 	return statusOutput, nil
+}
+
+func Branch(opts BranchOptions) (string, error) {
+	args := []string{"branch"}
+	if opts.List {
+		// No additional arguments needed to list branches
+	} else if opts.Create {
+		args = append(args, opts.Name)
+	} else if opts.Delete {
+		args = append(args, "-d", opts.Name)
+	}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("failed to manage branches: %v", err)
+	}
+	branchOutput := "Branch operation executed successfully."
+	return branchOutput, nil
 }
