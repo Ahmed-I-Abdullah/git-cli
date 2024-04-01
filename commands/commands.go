@@ -92,6 +92,19 @@ var Commands = []*cli.Command{
 		},
 	},
 	{
+		Name:   "rebase",
+		Usage:  "Reapply commits on top of another base tip",
+		Action: rebaseViaGRPC,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "branch",
+				Aliases:  []string{"b"},
+				Usage:    "Branch name to rebase onto the current branch",
+				Required: true,
+			},
+		},
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,

@@ -77,6 +77,11 @@ type MergeOptions struct {
 	Options
 }
 
+type RebaseOptions struct {
+	Branch string
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -292,6 +297,23 @@ func Merge(opts MergeOptions) error {
 	}
 
 	args := []string{"merge", opts.Branch}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
+func Rebase(opts RebaseOptions) error {
+	if opts.Branch == "" {
+		return fmt.Errorf("branch name is required for rebase")
+	}
+
+	args := []string{"rebase", opts.Branch}
 	if opts.Verbose {
 		args = append(args, "--verbose")
 	}
