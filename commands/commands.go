@@ -24,6 +24,11 @@ var Commands = []*cli.Command{
 		Action: pushViaGRPC,
 	},
 	{
+		Name:   "add",
+		Usage:  "Add file contents to the index",
+		Action: addViaGRPC,
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,

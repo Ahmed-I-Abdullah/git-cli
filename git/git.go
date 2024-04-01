@@ -32,6 +32,11 @@ type PushOptions struct {
 	Options
 }
 
+type AddOptions struct {
+	FilePaths []string
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -96,6 +101,23 @@ func Push(opts PushOptions) error {
 		args = append(args, "--force")
 	}
 	args = append(args, opts.Remote)
+
+	cmd := exec.Command("git", args...)
+	if opts.Verbose {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
+
+	return cmd.Run()
+}
+
+func Add(opts AddOptions) error {
+	if len(opts.FilePaths) == 0 {
+		return fmt.Errorf("at least one file path is required for adding")
+	}
+
+	args := []string{"add"}
+	args = append(args, opts.FilePaths...)
 
 	cmd := exec.Command("git", args...)
 	if opts.Verbose {
