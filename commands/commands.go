@@ -127,6 +127,18 @@ var Commands = []*cli.Command{
 		Action: stashViaGRPC,
 	},
 	{
+		Name:   "tag",
+		Usage:  "Create, list, delete or verify a tag object signed with GPG",
+		Action: tagViaGRPC,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "m",
+				Usage:    "Tag message",
+				Required: false, // Set to true if message is required for creating a tag
+			},
+		},
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,

@@ -96,6 +96,12 @@ type StashOptions struct {
 	Options
 }
 
+type TagOptions struct {
+	Name    string
+	Message string
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -375,6 +381,25 @@ func Reset(opts ResetOptions) error {
 
 func Stash(opts StashOptions) error {
 	args := []string{"stash"}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
+func Tag(opts TagOptions) error {
+	args := []string{"tag"}
+	if opts.Name != "" {
+		args = append(args, opts.Name)
+	}
+	if opts.Message != "" {
+		args = append(args, "-m", opts.Message)
+	}
 	if opts.Verbose {
 		args = append(args, "--verbose")
 	}
