@@ -72,6 +72,11 @@ type LogOptions struct {
 	Options
 }
 
+type MergeOptions struct {
+	Branch string
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -270,6 +275,23 @@ func Fetch(opts FetchOptions) error {
 
 func Log(opts LogOptions) error {
 	args := []string{"log"}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
+func Merge(opts MergeOptions) error {
+	if opts.Branch == "" {
+		return fmt.Errorf("branch name is required for merge")
+	}
+
+	args := []string{"merge", opts.Branch}
 	if opts.Verbose {
 		args = append(args, "--verbose")
 	}

@@ -79,6 +79,19 @@ var Commands = []*cli.Command{
 		Action: logViaGRPC,
 	},
 	{
+		Name:   "merge",
+		Usage:  "Join two or more development histories together",
+		Action: mergeViaGRPC,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "branch",
+				Aliases:  []string{"b"},
+				Usage:    "Branch name to merge into the current branch",
+				Required: true,
+			},
+		},
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,
