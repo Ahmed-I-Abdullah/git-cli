@@ -57,6 +57,11 @@ var Commands = []*cli.Command{
 		},
 	},
 	{
+		Name:   "diff",
+		Usage:  "Show the git diff",
+		Action: diffViaGRPC,
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,

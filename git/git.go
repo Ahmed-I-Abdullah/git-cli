@@ -59,6 +59,10 @@ type CheckoutOptions struct {
 	Options
 }
 
+type DiffOptions struct {
+	Options
+}
+
 func Clone(opts CloneOptions) error {
 	if opts.URL == "" {
 		return fmt.Errorf("URL is required for cloning")
@@ -215,6 +219,19 @@ func Checkout(opts CheckoutOptions) error {
 	}
 
 	args := []string{"checkout", opts.Branch}
+	if opts.Verbose {
+		args = append(args, "--verbose")
+	}
+
+	cmd := exec.Command("git", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
+func Diff(opts DiffOptions) error {
+	args := []string{"diff"}
 	if opts.Verbose {
 		args = append(args, "--verbose")
 	}
