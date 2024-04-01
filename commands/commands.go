@@ -62,6 +62,18 @@ var Commands = []*cli.Command{
 		Action: diffViaGRPC,
 	},
 	{
+		Name:   "fetch",
+		Usage:  "Fetch branches and/or tags from another repository, and update the remote tracking branches",
+		Action: fetchViaGRPC,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "remote",
+				Aliases: []string{"r"},
+				Usage:   "The name of the remote repository to fetch from",
+			},
+		},
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,
