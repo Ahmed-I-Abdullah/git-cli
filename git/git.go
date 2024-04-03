@@ -43,14 +43,9 @@ type CommitOptions struct {
 	Options
 }
 
-type StatusOptions struct {
-	Options
-}
-
 type BranchOptions struct {
 	List   bool
 	Create bool
-	Delete bool
 	Name   string
 	Options
 }
@@ -60,27 +55,16 @@ type CheckoutOptions struct {
 	Options
 }
 
-type DiffOptions struct {
-	Options
-}
-
 type FetchOptions struct {
 	Remote string
 	Options
 }
 
-type LogOptions struct {
-	Options
-}
-
 type MergeOptions struct {
 	Branch string
-	Options
 }
-
 type RebaseOptions struct {
 	Branch string
-	Options
 }
 
 type RemoteOptions struct {
@@ -89,7 +73,6 @@ type RemoteOptions struct {
 
 type ResetOptions struct {
 	Commit string
-	Options
 }
 
 type StashOptions struct {
@@ -99,7 +82,6 @@ type StashOptions struct {
 type TagOptions struct {
 	Name    string
 	Message string
-	Options
 }
 
 func Clone(opts CloneOptions) error {
@@ -177,18 +159,12 @@ func Push(opts PushOptions) error {
 }
 
 func Add(opts AddOptions) error {
-	if len(opts.FilePaths) == 0 {
-		return fmt.Errorf("at least one file path is required for adding")
-	}
-
 	args := []string{"add"}
 	args = append(args, opts.FilePaths...)
 
 	cmd := exec.Command("git", args...)
-	if opts.Verbose {
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-	}
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
 }
@@ -209,47 +185,41 @@ func Commit(opts CommitOptions) error {
 
 	return cmd.Run()
 }
-func Status(opts StatusOptions) (string, error) {
-	args := []string{"status"}
-	if opts.Verbose {
-		args = append(args, "--verbose")
+func Status() (string, error) {
+	cmd := exec.Command("git", "status")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		return "", err
 	}
 
-	cmd := exec.Command("git", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("failed to get status: %v", err)
-	}
-
-	statusOutput := "Current status of the repo."
-
-	return statusOutput, nil
+	return out.String(), nil
 }
 
 func Branch(opts BranchOptions) (string, error) {
-	args := []string{"branch"}
+	var args []string
+	var out bytes.Buffer
+
 	if opts.List {
-		// No additional arguments needed to list branches
-	} else if opts.Create {
-		args = append(args, opts.Name)
-	} else if opts.Delete {
-		args = append(args, "-d", opts.Name)
+		args = []string{"branch", "--list"}
+	} else if opts.Create && opts.Name != "" {
+		args = []string{"branch", opts.Name}
+	} else {
+		return "", fmt.Errorf("either List must be true or Create must be true with a non-empty Name")
 	}
+
 	if opts.Verbose {
 		args = append(args, "--verbose")
 	}
 
 	cmd := exec.Command("git", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = &out
+	cmd.Stderr = &out
 
-	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("failed to manage branches: %v", err)
-	}
-	branchOutput := "Branch operation executed successfully."
-	return branchOutput, nil
+	err := cmd.Run()
+	return out.String(), err
 }
 
 func Checkout(opts CheckoutOptions) error {
@@ -269,13 +239,8 @@ func Checkout(opts CheckoutOptions) error {
 	return cmd.Run()
 }
 
-func Diff(opts DiffOptions) error {
-	args := []string{"diff"}
-	if opts.Verbose {
-		args = append(args, "--verbose")
-	}
-
-	cmd := exec.Command("git", args...)
+func Diff() error {
+	cmd := exec.Command("git", "diff")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -298,29 +263,22 @@ func Fetch(opts FetchOptions) error {
 	return cmd.Run()
 }
 
-func Log(opts LogOptions) error {
-	args := []string{"log"}
-	if opts.Verbose {
-		args = append(args, "--verbose")
+func Log() error {
+	cmd := exec.Command("git", "log")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		return err
 	}
 
-	cmd := exec.Command("git", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	return cmd.Run()
+	println(out.String())
+	return nil
 }
 
 func Merge(opts MergeOptions) error {
-	if opts.Branch == "" {
-		return fmt.Errorf("branch name is required for merge")
-	}
-
 	args := []string{"merge", opts.Branch}
-	if opts.Verbose {
-		args = append(args, "--verbose")
-	}
-
 	cmd := exec.Command("git", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -333,25 +291,15 @@ func Rebase(opts RebaseOptions) error {
 		return fmt.Errorf("branch name is required for rebase")
 	}
 
-	args := []string{"rebase", opts.Branch}
-	if opts.Verbose {
-		args = append(args, "--verbose")
-	}
-
-	cmd := exec.Command("git", args...)
+	cmd := exec.Command("git", "rebase", opts.Branch)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
 }
 
-func Remote(opts RemoteOptions) (string, error) {
-	args := []string{"remote", "-v"}
-	if opts.Verbose {
-		args = append(args, "--verbose")
-	}
-
-	cmd := exec.Command("git", args...)
+func Remote() (string, error) {
+	cmd := exec.Command("git", "remote", "-v")
 	var out bytes.Buffer
 	cmd.Stdout = &out
 
@@ -368,9 +316,6 @@ func Reset(opts ResetOptions) error {
 	if opts.Commit != "" {
 		args = append(args, opts.Commit)
 	}
-	if opts.Verbose {
-		args = append(args, "--verbose")
-	}
 
 	cmd := exec.Command("git", args...)
 	cmd.Stdout = os.Stdout
@@ -379,13 +324,8 @@ func Reset(opts ResetOptions) error {
 	return cmd.Run()
 }
 
-func Stash(opts StashOptions) error {
-	args := []string{"stash"}
-	if opts.Verbose {
-		args = append(args, "--verbose")
-	}
-
-	cmd := exec.Command("git", args...)
+func Stash() error {
+	cmd := exec.Command("git", "stash")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -393,15 +333,11 @@ func Stash(opts StashOptions) error {
 }
 
 func Tag(opts TagOptions) error {
-	args := []string{"tag"}
-	if opts.Name != "" {
-		args = append(args, opts.Name)
-	}
+	var args []string
 	if opts.Message != "" {
-		args = append(args, "-m", opts.Message)
-	}
-	if opts.Verbose {
-		args = append(args, "--verbose")
+		args = []string{"tag", "-a", opts.Name, "-m", opts.Message}
+	} else {
+		args = []string{"tag", opts.Name}
 	}
 
 	cmd := exec.Command("git", args...)

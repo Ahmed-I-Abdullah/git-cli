@@ -26,27 +26,35 @@ var Commands = []*cli.Command{
 	{
 		Name:   "add",
 		Usage:  "Add file contents to the index",
-		Action: addViaGRPC,
+		Action: add,
 	},
 	{
 		Name:   "commit",
 		Usage:  "Record changes to the repository",
-		Action: commitViaGRPC,
-	},
-	{
-		Name:   "status",
-		Usage:  "Show the working tree status",
-		Action: statusViaGRPC,
+		Action: commit,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "message",
+				Aliases:  []string{"m"},
+				Usage:    "Commit message",
+				Required: true,
+			},
+		},
 	},
 	{
 		Name:   "branch",
 		Usage:  "List, create, or delete branches",
-		Action: branchViaGRPC,
+		Action: branch,
+	},
+	{
+		Name:   "status",
+		Usage:  "Show the working tree status",
+		Action: status,
 	},
 	{
 		Name:   "checkout",
 		Usage:  "Switch branches or restore working tree files",
-		Action: checkoutViaGRPC,
+		Action: checkout,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "branch",
@@ -58,34 +66,33 @@ var Commands = []*cli.Command{
 	},
 	{
 		Name:   "diff",
-		Usage:  "Show the git diff",
-		Action: diffViaGRPC,
+		Usage:  "Show the changes between commits, commit and working tree, etc",
+		Action: diff,
 	},
 	{
 		Name:   "fetch",
-		Usage:  "Fetch branches and/or tags from another repository, and update the remote tracking branches",
-		Action: fetchViaGRPC,
+		Usage:  "Download objects and refs from another repository",
+		Action: fetch,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "remote",
-				Aliases: []string{"r"},
 				Usage:   "The name of the remote repository to fetch from",
+				Aliases: []string{"r"},
 			},
 		},
 	},
 	{
 		Name:   "log",
 		Usage:  "Show commit logs",
-		Action: logViaGRPC,
+		Action: log,
 	},
 	{
 		Name:   "merge",
 		Usage:  "Join two or more development histories together",
-		Action: mergeViaGRPC,
+		Action: merge,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "branch",
-				Aliases:  []string{"b"},
 				Usage:    "Branch name to merge into the current branch",
 				Required: true,
 			},
@@ -94,11 +101,10 @@ var Commands = []*cli.Command{
 	{
 		Name:   "rebase",
 		Usage:  "Reapply commits on top of another base tip",
-		Action: rebaseViaGRPC,
+		Action: rebase,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "branch",
-				Aliases:  []string{"b"},
 				Usage:    "Branch name to rebase onto the current branch",
 				Required: true,
 			},
@@ -106,35 +112,34 @@ var Commands = []*cli.Command{
 	},
 	{
 		Name:   "remote",
-		Usage:  "Manage set of tracked repositories",
-		Action: remoteViaGRPC,
+		Usage:  "List the remote connections you have to other repositories",
+		Action: remote,
 	},
 	{
 		Name:   "reset",
 		Usage:  "Reset current HEAD to the specified state",
-		Action: resetViaGRPC,
+		Action: reset,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "commit",
-				Usage:    "Commit hash to reset to",
-				Required: false, // Make required false if you want to allow reset without specifying a commit, which would default to HEAD
+				Name:  "commit",
+				Usage: "Commit hash to reset to",
 			},
 		},
 	},
 	{
 		Name:   "stash",
 		Usage:  "Stash the changes in a dirty working directory",
-		Action: stashViaGRPC,
+		Action: stash,
 	},
 	{
 		Name:   "tag",
 		Usage:  "Create, list, delete or verify a tag object signed with GPG",
-		Action: tagViaGRPC,
+		Action: tag,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "m",
 				Usage:    "Tag message",
-				Required: false, // Set to true if message is required for creating a tag
+				Required: false,
 			},
 		},
 	},
