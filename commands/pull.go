@@ -34,8 +34,10 @@ func pullViaGRPC(c *cli.Context) error {
 	}
 
 	err = git.Pull(git.PullOptions{
-		URL:     response.RepoAddress,
-		Verbose: true,
+		URL: response.RepoAddress,
+		Options: git.Options{
+			Verbose: true,
+		},
 	})
 
 	if err != nil {

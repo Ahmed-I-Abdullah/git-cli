@@ -19,6 +19,11 @@ var Commands = []*cli.Command{
 		Action: cloneViaGRPC,
 	},
 	{
+		Name:   "push",
+		Usage:  "Push Git repository via GRPC",
+		Action: pushViaGRPC,
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,

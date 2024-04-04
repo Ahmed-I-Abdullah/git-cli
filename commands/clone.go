@@ -39,9 +39,11 @@ func cloneViaGRPC(c *cli.Context) error {
 	fmt.Printf("Repository URL retrieval successful. Repo Address: %s\n", response.RepoAddress)
 
 	err = git.Clone(git.CloneOptions{
-		URL:     response.RepoAddress,
-		Dir:     fmt.Sprintf("./%s", repoName),
-		Verbose: true,
+		URL: response.RepoAddress,
+		Dir: fmt.Sprintf("./%s", repoName),
+		Options: git.Options{
+			Verbose: true,
+		},
 	})
 
 	if err != nil {
