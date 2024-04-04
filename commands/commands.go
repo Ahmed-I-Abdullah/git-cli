@@ -24,6 +24,11 @@ var Commands = []*cli.Command{
 		Action: pushViaGRPC,
 	},
 	{
+		Name:   "git",
+		Usage:  "Execute a git command directly",
+		Action: executeGitCommand,
+	},
+	{
 		Name:   "config",
 		Usage:  "Set configuration options",
 		Action: setConfig,
