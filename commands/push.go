@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"time"
@@ -40,6 +41,8 @@ func pushViaGRPC(c *cli.Context) error {
 		return fmt.Errorf("Failed to get leader url via GRPC: %v", err)
 	}
 
+	fmt.Printf("Leader response is %v", response)
+
 	err = git.Push(git.PushOptions{
 		Remote:  response.GitRepoAddress,
 		PushAll: true,
@@ -52,17 +55,34 @@ func pushViaGRPC(c *cli.Context) error {
 		return fmt.Errorf("Failed to push repository to leader: %v", err)
 	}
 
-	grpcCtx, grpcCancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer grpcCancel()
-	leaderConn, err := google_grpc.DialContext(grpcCtx, response.GrpcAddress, google_grpc.WithInsecure(), google_grpc.WithBlock())
+	fmt.Printf("Leader grpc address: -%s-", response.GrpcAddress)
 
+	currentConnAddress, err := resolveAddress(client.GetConn().Target())
 	if err != nil {
-		return fmt.Errorf("Failed to connect to leader with gRPC: %v", err)
+		return fmt.Errorf("Failed to resolve current connection address: %v", err)
 	}
-	defer leaderConn.Close()
+
+	resLeaderGrpcAddr, err := resolveAddress(response.GrpcAddress)
+	if err != nil {
+		return fmt.Errorf("Failed to resolve leader gRPC address: %v", err)
+	}
+
+	var leaderConn *google_grpc.ClientConn
+
+	if currentConnAddress == resLeaderGrpcAddr {
+		leaderConn = client.GetConn()
+	} else {
+		grpcCtx, grpcCancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer grpcCancel()
+		leaderConn, err = google_grpc.DialContext(grpcCtx, resLeaderGrpcAddr, google_grpc.WithInsecure(), google_grpc.WithBlock())
+
+		if err != nil {
+			return fmt.Errorf("Failed to connect to leader with gRPC: %v", err)
+		}
+		defer leaderConn.Close()
+	}
 
 	leaderGrpcClient := pb.NewRepositoryClient(leaderConn)
-
 	notifyResponse, err := leaderGrpcClient.NotifyPushCompletion(ctx, &pb.NotifyPushCompletionRequest{Name: repoName})
 
 	if err != nil {
@@ -70,6 +90,29 @@ func pushViaGRPC(c *cli.Context) error {
 	}
 
 	fmt.Printf("Leader notify response: %s", notifyResponse.Message)
-
 	return nil
+}
+
+func resolveAddress(address string) (string, error) {
+	host, port, err := net.SplitHostPort(address)
+	if err != nil {
+		return "", err
+	}
+
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		return "", err
+	}
+
+	if len(ips) == 0 {
+		return "", fmt.Errorf("No IPs found for the hostname: %s", host)
+	}
+
+	for _, ip := range ips {
+		if ip4 := ip.To4(); ip4 != nil {
+			return net.JoinHostPort(ip4.String(), port), nil
+		}
+	}
+
+	return net.JoinHostPort(ips[0].String(), port), nil
 }
