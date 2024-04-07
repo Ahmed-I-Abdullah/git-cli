@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/Ahmed-I-Abdullah/p2p-code-collaboration/pb"
 	"github.com/ammar-y62/git-cli/git"
@@ -18,10 +20,12 @@ func pullViaGRPC(c *cli.Context) error {
 
 	defer client.Close()
 
-	repoName := c.Args().First()
-	if repoName == "" {
-		return fmt.Errorf("you must provide a repository name for pulling changes")
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get current directory: %v", err)
 	}
+
+	repoName := filepath.Base(currentDir)
 
 	grpcClient := pb.NewRepositoryClient(client.GetConn())
 

@@ -23,6 +23,12 @@ func main() {
 
 	app.Commands = commands.Commands
 
+	app.CommandNotFound = func(ctx *cli.Context, command string) {
+		// proxy commands with no grpc handler to git
+		args := os.Args[2:]
+		commands.ProxyToGit(ctx, command, args...)
+	}
+
 	err := app.Run(os.Args)
 
 	if err != nil {
