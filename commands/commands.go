@@ -2,6 +2,10 @@ package commands
 
 import "github.com/urfave/cli/v2"
 
+/*
+ * Commands is a slice of cli.Command structures representing the available CLI commands.
+ * Each command structure includes the name, usage description, action function to execute, and optional flags associated with the command.
+ */
 var Commands = []*cli.Command{
 	{
 		Name:   "init",
