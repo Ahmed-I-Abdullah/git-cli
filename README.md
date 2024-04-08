@@ -1,4 +1,16 @@
-# Git-CLI
+# Git-CLI (CPSC 559 Final Project)
+
+## Team Members
+
+| Group \#:      |  2   |
+| -------------- | --- |
+| Student Names: | Ahmed Abdullah |
+|                | Rayyan Khalil |
+|                | Ammar Elzeftawy |
+|                | Rahat Islam |
+|                | Ahmed Waly |
+
+## Overview
 
 This project provides a Command Line Interface (CLI) wrapper for Git commands, integrating GRPC support for specific tasks. It intercepts standard Git commands (like `push`, `pull`, `init`) to either execute them directly or forward other commands to a GRPC service based on the provided configuration.
 
@@ -63,32 +75,16 @@ You may need to move the binary to a directory that is in your PATH if it is not
 sudo mv git-cli /usr/local/bin
 ```
 
-### Run Your Command
-
-Now, if everything is set up correctly, you should be able to run your CLI application from any directory using the following command:
-
-```sh
-git-cli git status
-```
-
-or
-
-```sh
-git-cli grpc someCommand
-```
-
-Keep in mind that every time you make changes to your Go code, you will need to recompile the binary using `go build` and replace the existing binary in your PATH with the new one.
-
 ## Using Git-CLI
 
 Here is how you can use the Git-CLI:
 
-```bash
-# To execute a Git command
-git-cli git <git-command>
+Replace `<git-command>` with any git command you wish to run, like `push`, `add`, `commit`, etc., and replace `<your-grpc-command>` with the command you wish to execute via GRPC.
 
-# To execute a command via GRPC
-git-cli grpc <your-grpc-command>
-```
+The following are some of the main commands supported by the Git-CLI:
 
-Replace `<git-command>` with any git command you wish to run, like `status`, `commit`, `push`, etc., and replace `<your-grpc-command>` with the command you wish to execute via GRPC.
+1. Run `git-peer init (repo name)` to initialize a bare repo with that repo name
+2. Run `git-peer pull (repo name)` to pull the latest changes from that repo name
+3. Run `git-peer add` to add any new local changes to the staging area
+4. Run `git-peer commit -m "(message)"` to commit any changes in the staging area
+5. Run `git-peer push` to push all commits to the leader branch
