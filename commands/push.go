@@ -43,18 +43,6 @@ func pushViaGRPC(c *cli.Context) error {
 
 	fmt.Printf("Leader response is %v", response)
 
-	err = git.Push(git.PushOptions{
-		Remote:  response.GitRepoAddress,
-		PushAll: true,
-		Options: git.Options{
-			Verbose: true,
-		},
-	})
-
-	if err != nil {
-		return fmt.Errorf("Failed to push repository to leader: %v", err)
-	}
-
 	fmt.Printf("Leader grpc address: -%s-", response.GrpcAddress)
 
 	currentConnAddress, err := resolveAddress(client.GetConn().Target())
@@ -101,6 +89,18 @@ func pushViaGRPC(c *cli.Context) error {
 	}
 
 	fmt.Printf("\nSuccessfully acquired lock from leader for reposiotry %s", repoName)
+
+	err = git.Push(git.PushOptions{
+		Remote:  response.GitRepoAddress,
+		PushAll: true,
+		Options: git.Options{
+			Verbose: true,
+		},
+	})
+
+	if err != nil {
+		return fmt.Errorf("Failed to push repository to leader: %v", err)
+	}
 
 	notifyResponse, err := leaderGrpcClient.NotifyPushCompletion(ctx, &pb.NotifyPushCompletionRequest{Name: repoName})
 
