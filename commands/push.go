@@ -84,15 +84,19 @@ func pushViaGRPC(c *cli.Context) error {
 
 	leaderGrpcClient := pb.NewRepositoryClient(leaderConn)
 
+	fmt.Printf("\nAttempting to acquire lock for repository %s", repoName)
+
 	acquirLockResponse, err := leaderGrpcClient.AcquireLock(ctx, &pb.AcquireLockRequest{
 		RepoName: repoName,
 	})
 
 	if err != nil {
+		fmt.Errorf("\nFailed to aquire lock from leader for repo %s. Error: %v", repoName, err)
 		return fmt.Errorf("Failed to acquire lock from leader: %v", err)
 	}
 
 	if !acquirLockResponse.Ok {
+		fmt.Printf("\nSuccessfully acquired lock from leader for reposiotry %s", repoName)
 		return fmt.Errorf("Failed to acquire reposiotry push as another push is in progress. Please try again later")
 	}
 
@@ -102,7 +106,7 @@ func pushViaGRPC(c *cli.Context) error {
 		return fmt.Errorf("Failed to notify leader about repository push: %v", err)
 	}
 
-	fmt.Printf("Leader notify response: %s", notifyResponse.Message)
+	fmt.Printf("\nLeader notify response: %s", notifyResponse.Message)
 	return nil
 }
 
