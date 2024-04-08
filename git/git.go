@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 type Options struct {
@@ -96,6 +97,8 @@ func Push(opts PushOptions) error {
 		args = append(args, "--force")
 	}
 	args = append(args, opts.Remote)
+
+	fmt.Println("Executing command: git", strings.Join(args, " "))
 
 	cmd := exec.Command("git", args...)
 	if opts.Verbose {

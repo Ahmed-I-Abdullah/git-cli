@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"time"
@@ -40,6 +41,55 @@ func pushViaGRPC(c *cli.Context) error {
 		return fmt.Errorf("Failed to get leader url via GRPC: %v", err)
 	}
 
+	fmt.Printf("Leader response is %v", response)
+
+	fmt.Printf("Leader grpc address: -%s-", response.GrpcAddress)
+
+	currentConnAddress, err := resolveAddress(client.GetConn().Target())
+	if err != nil {
+		return fmt.Errorf("Failed to resolve current connection address: %v", err)
+	}
+
+	resLeaderGrpcAddr, err := resolveAddress(response.GrpcAddress)
+	if err != nil {
+		return fmt.Errorf("Failed to resolve leader gRPC address: %v", err)
+	}
+
+	var leaderConn *google_grpc.ClientConn
+
+	if currentConnAddress == resLeaderGrpcAddr {
+		leaderConn = client.GetConn()
+	} else {
+		grpcCtx, grpcCancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer grpcCancel()
+		leaderConn, err = google_grpc.DialContext(grpcCtx, resLeaderGrpcAddr, google_grpc.WithInsecure(), google_grpc.WithBlock())
+
+		if err != nil {
+			return fmt.Errorf("Failed to connect to leader with gRPC: %v", err)
+		}
+		defer leaderConn.Close()
+	}
+
+	leaderGrpcClient := pb.NewRepositoryClient(leaderConn)
+
+	fmt.Printf("\nAttempting to acquire lock for repository %s", repoName)
+
+	acquirLockResponse, err := leaderGrpcClient.AcquireLock(ctx, &pb.AcquireLockRequest{
+		RepoName: repoName,
+	})
+
+	if err != nil {
+		fmt.Errorf("\nFailed to aquire lock from leader for repo %s. Error: %v", repoName, err)
+		return fmt.Errorf("Failed to acquire lock from leader: %v", err)
+	}
+
+	if !acquirLockResponse.Ok {
+		fmt.Printf("\nFailed to acquired lock from leader for reposiotry %s. Another push is in progress.", repoName)
+		return fmt.Errorf("Failed to acquire reposiotry push as another push is in progress. Please try again later")
+	}
+
+	fmt.Printf("\nSuccessfully acquired lock from leader for reposiotry %s", repoName)
+
 	err = git.Push(git.PushOptions{
 		Remote:  response.GitRepoAddress,
 		PushAll: true,
@@ -52,24 +102,36 @@ func pushViaGRPC(c *cli.Context) error {
 		return fmt.Errorf("Failed to push repository to leader: %v", err)
 	}
 
-	grpcCtx, grpcCancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer grpcCancel()
-	leaderConn, err := google_grpc.DialContext(grpcCtx, response.GrpcAddress, google_grpc.WithInsecure(), google_grpc.WithBlock())
-
-	if err != nil {
-		return fmt.Errorf("Failed to connect to leader with gRPC: %v", err)
-	}
-	defer leaderConn.Close()
-
-	leaderGrpcClient := pb.NewRepositoryClient(leaderConn)
-
 	notifyResponse, err := leaderGrpcClient.NotifyPushCompletion(ctx, &pb.NotifyPushCompletionRequest{Name: repoName})
 
 	if err != nil {
 		return fmt.Errorf("Failed to notify leader about repository push: %v", err)
 	}
 
-	fmt.Printf("Leader notify response: %s", notifyResponse.Message)
-
+	fmt.Printf("\nLeader notify response: %s", notifyResponse.Message)
 	return nil
+}
+
+func resolveAddress(address string) (string, error) {
+	host, port, err := net.SplitHostPort(address)
+	if err != nil {
+		return "", err
+	}
+
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		return "", err
+	}
+
+	if len(ips) == 0 {
+		return "", fmt.Errorf("No IPs found for the hostname: %s", host)
+	}
+
+	for _, ip := range ips {
+		if ip4 := ip.To4(); ip4 != nil {
+			return net.JoinHostPort(ip4.String(), port), nil
+		}
+	}
+
+	return net.JoinHostPort(ips[0].String(), port), nil
 }

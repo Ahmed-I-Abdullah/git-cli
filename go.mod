@@ -3,7 +3,7 @@ module github.com/ammar-y62/git-cli
 go 1.19
 
 require (
-	github.com/Ahmed-I-Abdullah/p2p-code-collaboration v0.0.0-20240330000551-59975da09cba
+	github.com/Ahmed-I-Abdullah/p2p-code-collaboration v0.0.0-20240407235450-d14d2c20b9a7
 	github.com/urfave/cli/v2 v2.27.1
 	google.golang.org/grpc v1.62.0
 )
