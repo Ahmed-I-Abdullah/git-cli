@@ -96,9 +96,11 @@ func pushViaGRPC(c *cli.Context) error {
 	}
 
 	if !acquirLockResponse.Ok {
-		fmt.Printf("\nSuccessfully acquired lock from leader for reposiotry %s", repoName)
+		fmt.Printf("\nFailed to acquired lock from leader for reposiotry %s. Another push is in progress.", repoName)
 		return fmt.Errorf("Failed to acquire reposiotry push as another push is in progress. Please try again later")
 	}
+
+	fmt.Printf("\nSuccessfully acquired lock from leader for reposiotry %s", repoName)
 
 	notifyResponse, err := leaderGrpcClient.NotifyPushCompletion(ctx, &pb.NotifyPushCompletionRequest{Name: repoName})
 
